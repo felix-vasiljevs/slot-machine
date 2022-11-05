@@ -122,5 +122,5 @@ while ($playerCash > 0) {
 //            add some cash
         }
     }
+    echo "You have no money left in your portfolio :( See you next time!\n";
 }
-echo "You have no money left in your portfolio :( See you next time!\n";
