@@ -1,21 +1,19 @@
 <?php
 
 $symbols = [
-    ['A' => 10],
-    ['K' => 8],
-    ['Q' => 6],
-    ['J' => 4],
-    ['10' => 2],
+    'A', 'K', 'Q', 'J', '10', '9', '8', '7', '6'
 ];
 
-$randomSymbols = $symbols[array_rand($symbols)];
-$implodedSymbols = implode(' | ', $randomSymbols);
-
-$playGround = [
-    [$implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols],  // 0
-    [$implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols],  // 1
-    [$implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols, $implodedSymbols]   // 2
-//    0    1    2    3    4
+$symbolsValue = [
+    'A' => 10,
+    'K' => 9,
+    'Q' => 8,
+    'J' => 7,
+    '10' => 6,
+    '9' => 5,
+    '8' => 4,
+    '7' => 3,
+    '6' => 2,
 ];
 
 $lines = [
@@ -39,23 +37,28 @@ $lines = [
     [[2, 0], [1, 1], [1, 2], [1, 3], [0, 4]],
 ];
 
-function displayPlayBoard (array $playGround)
-{
-    echo " {$playGround[0][0]} | {$playGround[0][1]} | {$playGround[0][2]} | {$playGround[0][3]} | {$playGround[0][4]} \n";
-    echo "---+---+---+---+---\n";
-    echo " {$playGround[1][0]} | {$playGround[1][1]} | {$playGround[1][2]} | {$playGround[1][3]} | {$playGround[1][4]} \n";
-    echo "---+---+---+---+---\n";
-    echo " {$playGround[2][0]} | {$playGround[2][1]} | {$playGround[2][2]} | {$playGround[2][3]} | {$playGround[2][4]} \n";
-}
-
 $COST_PER_SPIN = 1;
-//$BOARD_ROWS = 3;
-//$BOARD_COLUMNS = 5;
+$BOARD_ROWS = 3;
+$BOARD_COLUMNS = 5;
 //$board = [];
 
-$selection = (int)readline("\nWELCOME! Do you want to play?\n" .
-        "\n1. YES!\n" .
-        "\n2. No.\n" .
+function playBoard ()
+{
+    global $BOARD_ROWS, $BOARD_COLUMNS , $symbols;
+    $GLOBALS['board'] = [];
+    for ($row = 0; $row < $BOARD_ROWS; $row++) {
+        for ($columns = 0; $columns < $BOARD_COLUMNS; $columns++) {
+            $GLOBALS['board'][$row][] = $symbols[array_rand($symbols)];
+        }
+    }
+    foreach ($GLOBALS['board'] as $row) {
+        echo implode(" | ", $row) . PHP_EOL;
+    }
+}
+
+$selection = (int)readline("WELCOME! Do you want to play?" .
+        "   1. YES!" .
+        "   2. No." .
         "Enter your choice : ");
     echo PHP_EOL;
     if ($selection == 1) {
@@ -71,7 +74,7 @@ $selection = (int)readline("\nWELCOME! Do you want to play?\n" .
             exit;
         } else {
             echo "Alright! Let's have some fun\n";
-            displayPlayBoard($playGround);
+            playBoard();
         }
     }
 echo PHP_EOL;
@@ -81,46 +84,47 @@ $playerCash = (int)readline("Please, make a deposit: ");
 while ($playerCash > 0) {
 
     $spin = readline("Spin?\n" .
-        "1. YES!\n" .
-        "2. No.");
-
+        "   1. YES!\n" .
+        "   2. No.");
         if ($spin == 1) {
-            displayPlayBoard($playGround);
-            $playerCash -= $COST_PER_SPIN;
+            playBoard();
             echo "Your cash: {$playerCash}$\n";
         } else {
             $quitGame = (int)readline("Do you want to quit?\n" .
                 "1. Yes!\n" .
                 "2. No.");
             if ($quitGame == 1) {
-                echo "Your cash: {$playerCash}$\n";
-                echo "See you soon!\n";
+                echo "Your cash: {$playerCash}$" . PHP_EOL;
+                echo "See you soon!" . PHP_EOL;
                 break;
             } else {
-                echo "Lets continue!\n";
-                displayPlayBoard($playGround);
+                echo "Lets continue!" . PHP_EOL;
+                playBoard();
             }
         }
 
+    $playerCash -= $COST_PER_SPIN;
+    playBoard();
+
+    $win = 0;
     foreach ($lines as $line) {
         $lineValues = [];
-
-            foreach ($line as $position) {
-                $x = $position[0];
-                $y = $position[1];
-                $value = $playGround[$x][$y];
-                $test = array_push($lineValues, $value);
-            }
-
-        foreach ($symbols as $value){
-            $symbolsValue = $value;
+        foreach ($line as $position) {
+            [$x, $y] = $position;
+            $lineValues []= $GLOBALS['board'][$x][$y];
         }
 
-        if (array_sum($lineValues) == count($line)) {
-            $playerCash += $symbolsValue;
-            echo "WE GOT A LINE!!!\n";
-//            add some cash
+        if (count(array_unique($lineValues)) == 1) {
+            $win++;
+            $playerCash += $symbolsValue["{$lineValues[0]}"];
+            echo "WE GOT A LINE!!!" . PHP_EOL;
         }
     }
-    echo "You have no money left in your portfolio :( See you next time!\n";
+
+    echo "Your cash: {$playerCash}$" . PHP_EOL;
+
+    if ($playerCash == 0) {
+        echo "You have no money left in your portfolio :( See you next time!\n";
+        exit;
+    }
 }
